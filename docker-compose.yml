@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: refrain_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=refrain
+    networks:
+      - refrain_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: refrain_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DB_NAME=refrain
+      - JWT_SECRET_KEY=dev-secret-key-change-in-prod
+      - ENVIRONMENT=development
+    depends_on:
+      - mongodb
+    networks:
+      - refrain_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: refrain_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - refrain_network
+
+volumes:
+  mongodb_data:
+
+networks:
+  refrain_network:
+    driver: bridge
