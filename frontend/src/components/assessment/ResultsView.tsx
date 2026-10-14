@@ -1,22 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from 'recharts';
-import { AlertCircle, TrendingDown, ShieldAlert, Activity, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { AlertCircle, TrendingDown, ShieldAlert, Activity, RefreshCw, ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 import { Assessment, DailyInsight } from '@/types';
 import { cn } from '@/lib/utils';
 
-export const ResultsView: React.FC = () => {
+interface ResultsViewProps {
+  assessment?: Assessment | null;
+  onRetake?: () => void;
+}
+
+export const ResultsView: React.FC<ResultsViewProps> = ({ assessment: propAssessment, onRetake }) => {
   const navigate = useNavigate();
-  const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [assessment, setAssessment] = useState<Assessment | null>(propAssessment || null);
   const [insights, setInsights] = useState<DailyInsight[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!propAssessment);
 
   useEffect(() => {
+    if (propAssessment) {
+      setAssessment(propAssessment);
+      setLoading(false);
+      return;
+    }
     const fetchData = async () => {
       try {
         const [assData, insData] = await Promise.all([
@@ -32,7 +42,7 @@ export const ResultsView: React.FC = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [propAssessment]);
 
   if (loading) {
     return (
@@ -48,12 +58,17 @@ export const ResultsView: React.FC = () => {
 
   if (!assessment) return <div className="p-8 text-center">No assessment data available.</div>;
 
-  const vector = assessment.signals;
+  const vector: any = assessment.signal_vector || (assessment as any).signals || {};
+  const dopamine = vector.dopamine_sensitivity ?? vector.dopamineSensitivity ?? 0;
+  const stress = vector.stress_rating ?? vector.stressRating ?? 0;
+  const triggerFreq = vector.trigger_frequency ?? vector.triggerFrequency ?? 0;
+  const relapseRisk = vector.relapse_risk_index ?? vector.relapseRisk ?? 0;
+
   const radarData = [
-    { subject: 'Dopamine Sensitivity', A: vector.dopamineSensitivity, fullMark: 100 },
-    { subject: 'Stress Rating', A: vector.stressRating, fullMark: 100 },
-    { subject: 'Trigger Freq', A: vector.triggerFrequency, fullMark: 100 },
-    { subject: 'Relapse Risk', A: vector.relapseRisk, fullMark: 100 }
+    { subject: 'Dopamine Sensitivity', A: dopamine, fullMark: 100 },
+    { subject: 'Stress Rating', A: stress, fullMark: 100 },
+    { subject: 'Trigger Freq', A: triggerFreq, fullMark: 100 },
+    { subject: 'Relapse Risk', A: relapseRisk, fullMark: 100 }
   ];
 
   const getRiskColor = (value: number) => {
@@ -75,10 +90,16 @@ export const ResultsView: React.FC = () => {
           <h1 className="text-3xl font-bold tracking-tight">Your Assessment Results</h1>
           <p className="text-muted-foreground mt-1">Based on your recent check-in, here is your behavioral analysis.</p>
         </div>
-        <Button onClick={() => navigate('/assessment/take')} className="gap-2">
-          <RefreshCw className="w-4 h-4" />
-          Retake Assessment
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => (onRetake ? onRetake() : navigate('/assessment'))} className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Retake Assessment
+          </Button>
+          <Button onClick={() => navigate('/dashboard')} className="gap-2 font-semibold">
+            Continue to Dashboard
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

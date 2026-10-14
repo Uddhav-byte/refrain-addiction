@@ -5,10 +5,11 @@ export interface SwitchProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
   checked?: boolean
   defaultChecked?: boolean
   onChange?: (checked: boolean) => void
+  onCheckedChange?: (checked: boolean) => void
 }
 
 const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
-  ({ className, checked, defaultChecked, onChange, ...props }, ref) => {
+  ({ className, checked, defaultChecked, onChange, onCheckedChange, ...props }, ref) => {
     const [isInternalChecked, setIsInternalChecked] = React.useState(defaultChecked || false)
     const isChecked = checked !== undefined ? checked : isInternalChecked
 
@@ -18,7 +19,7 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
       if (checked === undefined) {
         setIsInternalChecked(newValue)
       }
-      onChange?.(newValue)
+      (onCheckedChange || onChange)?.(newValue)
     }
 
     return (

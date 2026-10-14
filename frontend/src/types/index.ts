@@ -3,6 +3,7 @@ export interface User {
   email: string
   username: string
   full_name: string
+  name?: string
   avatar_url?: string
   streak_days: number
   longest_streak: number
@@ -23,7 +24,8 @@ export interface BehavioralSignalVector {
 }
 
 export interface DailyInsight {
-  insight_id: string
+  id?: string
+  insight_id?: string
   category: string
   title: string
   description: string
@@ -39,23 +41,30 @@ export interface Assessment {
 }
 
 export interface AssessmentQuestion {
-  question_id: string
-  question_text: string
+  id?: string
+  question_id?: string
+  text?: string
+  question_text?: string
   category: string
   min_label?: string
   max_label?: string
+  weight?: number
+  options?: { label: string; value: number }[]
 }
 
 export interface UrgeLog {
-  id: string
+  id?: string
   intensity: number
   triggers: string[]
   emotions: string[]
   coping_strategy_used?: string
+  copingStrategyUsed?: string
   duration_minutes?: number
+  durationMinutes?: number
   notes?: string
   resisted: boolean
-  created_at: string
+  created_at?: string
+  timestamp?: string
 }
 
 export interface UrgeTrendDataPoint {
@@ -79,22 +88,37 @@ export interface MoodEntry {
 }
 
 export interface MilestoneBadge {
-  badge_id: string
+  id?: string
+  badge_id?: string
   name: string
   description: string
   icon: string
-  days_required: number
+  days_required?: number
   earned: boolean
   earned_at?: string
+  earnedDate?: string
+  daysRemaining?: number
 }
 
 export interface Dashboard {
-  streak_days: number
-  longest_streak: number
-  total_urges_resisted: number
-  total_days_tracked: number
-  current_milestones: MilestoneBadge[]
-  relapse_risk_level: string
+  streak?: {
+    current: number
+    longest: number
+    nextMilestone: number
+  }
+  streak_days?: number
+  longest_streak?: number
+  total_urges_resisted?: number
+  total_days_tracked?: number
+  current_milestones?: MilestoneBadge[]
+  badges?: MilestoneBadge[]
+  relapse_risk_level?: string
+  stats?: {
+    urgesResisted: number
+    daysTracked: number
+    riskLevel: string
+  }
+  insights?: DailyInsight[]
 }
 
 export interface MoodTrendDataPoint {
@@ -110,30 +134,37 @@ export interface MoodTrend {
 }
 
 export interface TriggerHeatmapData {
-  day_of_week: number
+  day?: number
+  day_of_week?: number
   hour: number
   count: number
+  intensity?: number
 }
 
 export interface TriggerHeatmap {
-  data: TriggerHeatmapData[]
+  data?: TriggerHeatmapData[]
+  grid?: TriggerHeatmapData[]
 }
 
 export interface ChatMessage {
-  id: string
-  room_id: string
-  user_id: string
+  id?: string
+  room_id?: string
+  user_id?: string
+  userId?: string
   username: string
   content: string
-  message_type: string
-  created_at: string
+  message_type?: string
+  created_at?: string
 }
 
 export interface ChatRoom {
-  room_id: string
+  id?: string
+  room_id?: string
   name: string
   description: string
-  room_type: string
-  online_count: number
-  is_active: boolean
+  type?: string
+  room_type?: string
+  onlineCount?: number
+  online_count?: number
+  is_active?: boolean
 }

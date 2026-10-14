@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Button } from '@/components/ui/Button';
-import { Progress } from '@/components/ui/Progress';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { api } from '@/lib/api';
 import { AssessmentQuestion } from '@/types';
 import { QuestionCard } from './QuestionCard';
 
-export const AssessmentWizard: React.FC = () => {
+interface AssessmentWizardProps {
+  onComplete?: (assessment: any) => void;
+}
+
+export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }) => {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -22,7 +26,10 @@ export const AssessmentWizard: React.FC = () => {
         const data = await api.assessments.getQuestions();
         setQuestions(data);
         const initialAnswers: Record<string, number> = {};
-        data.forEach(q => { initialAnswers[q.id] = 5; });
+        data.forEach(q => {
+          const qId = q.id || q.question_id || '';
+          if (qId) initialAnswers[qId] = 5;
+        });
         setAnswers(initialAnswers);
       } catch (err) {
         toast.error('Failed to load assessment questions.');
@@ -48,9 +55,13 @@ export const AssessmentWizard: React.FC = () => {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await api.assessments.submitAssessment({ answers });
+      const res = await api.assessments.submitAssessment({ answers });
       toast.success('Assessment completed!');
-      navigate('/assessment/results');
+      if (onComplete) {
+        onComplete(res);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       toast.error('Failed to submit assessment.');
     } finally {
@@ -88,11 +99,16 @@ export const AssessmentWizard: React.FC = () => {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <QuestionCard
-              question={currentQuestion}
-              value={answers[currentQuestion.id] || 5}
-              onChange={(val) => setAnswers(prev => ({ ...prev, [currentQuestion.id]: val }))}
-            />
+            {currentQuestion && (
+              <QuestionCard
+                question={currentQuestion}
+                value={answers[currentQuestion.id || currentQuestion.question_id || ''] || 5}
+                onChange={(val) => {
+                  const qId = currentQuestion.id || currentQuestion.question_id || '';
+                  if (qId) setAnswers(prev => ({ ...prev, [qId]: val }));
+                }}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

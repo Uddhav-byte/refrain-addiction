@@ -1,6 +1,4 @@
-import * as React from "react"
 import { Toaster as HotToaster, toast } from "react-hot-toast"
-import { cn } from "@/lib/utils"
 
 export function Toaster() {
   return (

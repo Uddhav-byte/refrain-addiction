@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 import { TriggerHeatmap as HeatmapType } from '@/types';
 
@@ -29,7 +29,9 @@ export const TriggerHeatmap: React.FC = () => {
     return <Skeleton className="w-full h-[400px] rounded-xl" />;
   }
 
-  if (!data || data.grid.length === 0) {
+  const gridCells = data?.grid || data?.data || [];
+
+  if (!data || gridCells.length === 0) {
     return (
       <Card>
         <CardHeader><CardTitle>Trigger Activity Heatmap</CardTitle></CardHeader>
@@ -66,7 +68,7 @@ export const TriggerHeatmap: React.FC = () => {
                   </div>
                   <div className="flex-1 flex gap-1">
                     {days.map((_, dayIndex) => {
-                      const cell = data.grid.find(c => c.day === dayIndex && c.hour === hour);
+                      const cell = gridCells.find((c: any) => (c.day ?? c.day_of_week) === dayIndex && c.hour === hour);
                       const count = cell ? cell.count : 0;
                       // Opacity calculation based on count (assuming max is 10 for basic scaling)
                       const opacity = Math.min(count * 0.15 + 0.05, 1);

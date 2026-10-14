@@ -10,13 +10,13 @@ interface TabsContextProps {
 const TabsContext = React.createContext<TabsContextProps | null>(null)
 
 export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
-  defaultValue: string
+  defaultValue?: string
   value?: string
   onValueChange?: (value: string) => void
 }
 
 export function Tabs({ defaultValue, value, onValueChange, children, className, ...props }: TabsProps) {
-  const [internalTab, setInternalTab] = React.useState(defaultValue)
+  const [internalTab, setInternalTab] = React.useState(defaultValue || value || '')
   const activeTab = value !== undefined ? value : internalTab
   
   const setActiveTab = React.useCallback(

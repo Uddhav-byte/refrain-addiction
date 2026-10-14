@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Leaf, Loader2 } from 'lucide-react';
+import { Leaf, Loader2, Sparkles, Database } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { api, isSupabaseConfigured } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,8 +18,14 @@ export function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, loginDemo, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
@@ -47,92 +54,157 @@ export function RegisterPage() {
 
     setIsLoading(true);
     try {
-      await register(formData);
-      navigate('/');
-    } catch (err) {
-      setError('Failed to create account');
+      const res = await api.auth.register(formData.email, formData.username, formData.password, formData.name);
+      await register(res);
+      // Take new user to behavioral assessment onboarding
+      navigate('/assessment');
+    } catch (err: any) {
+      setError(err?.message || 'Failed to create account');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    try {
+      await loginDemo();
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError('Failed to start demo session');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl flex bg-card rounded-2xl shadow-xl overflow-hidden border border-border min-h-[600px]">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/40 flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl flex bg-card rounded-2xl shadow-2xl overflow-hidden border border-border min-h-[620px]">
         {/* Left side visual */}
-        <div className="hidden md:flex flex-col justify-center items-center w-1/2 p-12 bg-primary/5 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent pointer-events-none" />
+        <div className="hidden md:flex flex-col justify-between w-1/2 p-10 bg-primary/5 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 via-transparent to-accent/10 pointer-events-none" />
+          
+          <div className="flex items-center gap-2 z-10">
+            <Leaf className="w-8 h-8 text-primary" />
+            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Refrain
+            </span>
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="z-10 text-center"
+            className="z-10 my-auto text-left space-y-4"
           >
-            <div className="flex justify-center mb-6">
-              <Leaf className="w-20 h-20 text-primary" />
-            </div>
-            <h1 className="text-4xl font-bold mb-4">Refrain</h1>
-            <p className="text-lg text-muted-foreground">Take the first step towards a better you.</p>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+              <Sparkles className="w-3.5 h-3.5" /> Start Your Recovery Today
+            </span>
+            <h1 className="text-3xl font-bold leading-tight">
+              A private, supportive haven for your recovery journey.
+            </h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Your data belongs strictly to you. With Supabase Row Level Security, your habit logs, assessments, and progress are 100% private.
+            </p>
           </motion.div>
+
+          <div className="z-10 text-xs text-muted-foreground flex items-center gap-2">
+            {isSupabaseConfigured ? (
+              <span className="flex items-center gap-1.5 text-emerald-500 font-medium">
+                <Database className="w-3.5 h-3.5" /> Supabase PostgreSQL Enabled
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Database className="w-3.5 h-3.5" /> Supabase Ready • Local Mode Active
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Right side form */}
-        <div className="w-full md:w-1/2 flex items-center justify-center p-8">
+        <div className="w-full md:w-1/2 flex items-center justify-center p-8 sm:p-10">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="w-full max-w-sm"
           >
-            <div className="md:hidden flex items-center gap-2 mb-6 justify-center">
+            <div className="md:hidden flex items-center gap-2 mb-4 justify-center">
               <Leaf className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-bold">Refrain</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Refrain
+              </span>
             </div>
             
             <Card className="border-0 shadow-none bg-transparent">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-2xl">Create account</CardTitle>
-                <CardDescription>Join Refrain to start your recovery journey</CardDescription>
+              <CardHeader className="px-0 pt-0 pb-4">
+                <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+                <CardDescription>Join Refrain to start your personalized transformation</CardDescription>
               </CardHeader>
               <CardContent className="px-0 pb-0">
                 <form onSubmit={handleSubmit} className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium" htmlFor="name">Full Name</label>
-                    <Input id="name" value={formData.name} onChange={handleChange} disabled={isLoading} />
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" htmlFor="name">
+                      Full Name
+                    </label>
+                    <Input id="name" placeholder="Alex Rivera" value={formData.name} onChange={handleChange} disabled={isLoading} required />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium" htmlFor="username">Username</label>
-                    <Input id="username" value={formData.username} onChange={handleChange} disabled={isLoading} />
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" htmlFor="username">
+                      Username
+                    </label>
+                    <Input id="username" placeholder="alex_r" value={formData.username} onChange={handleChange} disabled={isLoading} required />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium" htmlFor="email">Email</label>
-                    <Input id="email" type="email" value={formData.email} onChange={handleChange} disabled={isLoading} />
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" htmlFor="email">
+                      Email address
+                    </label>
+                    <Input id="email" type="email" placeholder="alex@example.com" value={formData.email} onChange={handleChange} disabled={isLoading} required />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <label className="text-sm font-medium" htmlFor="password">Password</label>
-                      <Input id="password" type="password" value={formData.password} onChange={handleChange} disabled={isLoading} />
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" htmlFor="password">
+                        Password
+                      </label>
+                      <Input id="password" type="password" placeholder="••••••••" value={formData.password} onChange={handleChange} disabled={isLoading} required />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium" htmlFor="confirmPassword">Confirm</label>
-                      <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} disabled={isLoading} />
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" htmlFor="confirmPassword">
+                        Confirm
+                      </label>
+                      <Input id="confirmPassword" type="password" placeholder="••••••••" value={formData.confirmPassword} onChange={handleChange} disabled={isLoading} required />
                     </div>
                   </div>
 
                   {error && (
-                    <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md mt-2">
+                    <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 p-2.5 rounded-lg font-medium mt-2">
                       {error}
                     </div>
                   )}
 
-                  <Button className="w-full mt-4" type="submit" disabled={isLoading}>
+                  <Button className="w-full font-semibold mt-3" type="submit" disabled={isLoading}>
                     {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                    Sign up
+                    Create Account & Begin
                   </Button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-muted-foreground">
+                {/* Quick Demo */}
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full gap-2 text-xs text-primary hover:bg-primary/10"
+                    onClick={handleDemoLogin}
+                    disabled={isLoading}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Or explore immediately with Demo Account
+                  </Button>
+                </div>
+
+                <div className="mt-4 text-center text-xs text-muted-foreground">
                   Already have an account?{' '}
-                  <Link to="/login" className="text-primary hover:underline font-medium">
+                  <Link to="/login" className="text-primary hover:underline font-semibold">
                     Sign in
                   </Link>
                 </div>

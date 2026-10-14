@@ -64,6 +64,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 @router.websocket("/ws/community/{room_id}")
+@router.websocket("/ws/chat/{room_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str, token: str = Query(...)):
     try:
         # Validate token
@@ -137,3 +138,11 @@ async def get_available_rooms():
 @router.get('/api/v1/chat/rooms/{room_id}/messages')
 async def get_room_messages(room_id: str, limit: int = Query(50), before: str = Query(None)):
     return await chat_service.get_room_messages(room_id, limit=limit, before=before)
+
+@router.post('/api/v1/chat/rooms/{room_id}/messages')
+async def post_room_message(room_id: str, data: dict):
+    content = data.get("content", "")
+    username = data.get("username", "Anonymous")
+    user_id = data.get("user_id", "anon")
+    saved = await chat_service.save_message(room_id=room_id, user_id=user_id, content=content)
+    return saved

@@ -15,12 +15,17 @@ async def log_mood(request: MoodLogRequest, current_user: dict = Depends(get_cur
     return await analytics_service.log_mood(current_user['id'], request)
 
 @router.get('/mood-trends', response_model=MoodTrendResponse)
+@router.get('/mood/trends', response_model=MoodTrendResponse)
 async def get_mood_trends(
-    period: str = Query('7d', pattern="^(7d|30d|90d)$"), 
+    period: str = Query('30d'), 
     current_user: dict = Depends(get_current_user)
 ):
-    return await analytics_service.get_mood_trends(current_user['id'], period)
+    normalized_period = f"{period}d" if period.isdigit() else period
+    if normalized_period not in ['7d', '30d', '90d']:
+        normalized_period = '30d'
+    return await analytics_service.get_mood_trends(current_user['id'], normalized_period)
 
 @router.get('/trigger-heatmap', response_model=TriggerHeatmapResponse)
+@router.get('/triggers/heatmap', response_model=TriggerHeatmapResponse)
 async def get_trigger_heatmap(current_user: dict = Depends(get_current_user)):
     return await analytics_service.get_trigger_heatmap(current_user['id'])

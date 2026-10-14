@@ -33,7 +33,7 @@ export function DialogOverlay() {
   )
 }
 
-export function DialogContent({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function DialogContent({ children, className, ...props }: React.ComponentPropsWithoutRef<typeof motion.div>) {
   const context = React.useContext(DialogContext)
   if (!context) throw new Error("Dialog components must be used within Dialog")
 

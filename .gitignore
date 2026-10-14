@@ -52,5 +52,12 @@ yarn-error.log*
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
 Thumbs.db
+
+# TypeScript / Vite artifacts
+*.tsbuildinfo
+frontend/vite.config.d.ts
+frontend/vite.config.js
+.freebuff/
+.wrangler/
+*/.wrangler/

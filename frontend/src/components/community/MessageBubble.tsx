@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { ChatMessage } from '@/types';
 import { formatRelativeTime } from '@/lib/utils';
@@ -11,7 +10,11 @@ interface MessageBubbleProps {
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
-  if (message.type === 'system') {
+  const msgType = message.message_type || (message as any).type;
+  const username = message.username || (message as any).userName || 'Anonymous';
+  const timestamp = message.created_at || (message as any).timestamp || new Date().toISOString();
+
+  if (msgType === 'system') {
     return (
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
@@ -25,7 +28,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) 
     );
   }
 
-  if (message.type === 'urge_checkin') {
+  if (msgType === 'urge_checkin') {
     return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
@@ -35,7 +38,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) 
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 max-w-sm w-full text-center space-y-2 shadow-sm">
           <Heart className="w-6 h-6 text-red-500 mx-auto animate-pulse" />
           <p className="text-sm font-medium">
-            <span className="font-bold">{message.userName}</span> is fighting an urge right now.
+            <span className="font-bold">{username}</span> is fighting an urge right now.
           </p>
           <button className="text-xs bg-red-500 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-red-600 transition-colors">
             Send Support
@@ -57,7 +60,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) 
       )}>
         {!isOwn && (
           <div className="text-[10px] font-semibold opacity-70 mb-1 block">
-            {message.userName}
+            {username}
           </div>
         )}
         <p className="text-sm leading-relaxed break-words">
@@ -67,7 +70,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) 
           "text-[9px] block mt-1.5 opacity-60",
           isOwn ? "text-right" : "text-left"
         )}>
-          {formatRelativeTime(message.timestamp)}
+          {formatRelativeTime(timestamp)}
         </span>
       </div>
     </motion.div>

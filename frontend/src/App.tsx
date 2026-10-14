@@ -1,15 +1,13 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/lib/auth';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
-import AppLayout from '@/components/layout/AppLayout';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 // Pages
 import Landing from '@/pages/Landing';
-import LoginPage from '@/components/auth/LoginPage';
-import RegisterPage from '@/components/auth/RegisterPage';
+import { LoginPage } from '@/components/auth/LoginPage';
+import { RegisterPage } from '@/components/auth/RegisterPage';
 import Dashboard from '@/pages/Dashboard';
 import AssessmentPage from '@/pages/Assessment';
 import UrgeLogPage from '@/pages/UrgeLog';
@@ -22,48 +20,57 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            
-            {/* Protected Routes */}
+            {/* Primary View: Flagship Mindo Mental Wellness Dashboard */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <AppLayout>
-                    <Dashboard />
-                  </AppLayout>
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
+
+            {/* Public and Supplementary Pages */}
+            <Route path="/landing" element={<Landing />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            
+            {/* Protected Feature Routes */}
             <Route
               path="/assessment"
               element={
                 <ProtectedRoute>
-                  <AppLayout>
-                    <AssessmentPage />
-                  </AppLayout>
+                  <AssessmentPage />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/urges"
+              path="/urge-log"
               element={
                 <ProtectedRoute>
-                  <AppLayout>
-                    <UrgeLogPage />
-                  </AppLayout>
+                  <UrgeLogPage />
                 </ProtectedRoute>
               }
+            />
+            {/* Route alias for backward compatibility */}
+            <Route
+              path="/urges"
+              element={<Navigate to="/urge-log" replace />}
             />
             <Route
               path="/community"
               element={
                 <ProtectedRoute>
-                  <AppLayout>
-                    <Community />
-                  </AppLayout>
+                  <Community />
                 </ProtectedRoute>
               }
             />
@@ -71,9 +78,7 @@ export default function App() {
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <AppLayout>
-                    <Profile />
-                  </AppLayout>
+                  <Profile />
                 </ProtectedRoute>
               }
             />
@@ -85,11 +90,12 @@ export default function App() {
           <Toaster 
             position="bottom-right"
             toastOptions={{
-              className: 'dark:bg-slate-800 dark:text-slate-100',
+              className: 'shadow-xl border border-purple-100',
               style: {
-                borderRadius: '10px',
-                background: 'var(--card)',
-                color: 'var(--card-foreground)',
+                borderRadius: '16px',
+                background: '#FFFFFF',
+                color: '#1E1B2E',
+                border: '1px solid #EDE9FE',
               },
             }} 
           />

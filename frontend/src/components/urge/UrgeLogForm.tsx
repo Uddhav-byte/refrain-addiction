@@ -1,197 +1,146 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
-import { cn } from '@/lib/utils';
-import { Check, X } from 'lucide-react';
+import type { UrgeLog } from '@/types';
 
-const TRIGGERS = ['Stress', 'Boredom', 'Social Pressure', 'Emotional Pain', 'Celebration', 'Habit', 'Loneliness', 'Anxiety'];
-const EMOTIONS = ['Anxious', 'Stressed', 'Sad', 'Angry', 'Bored', 'Lonely', 'Overwhelmed', 'Hopeful'];
+const COMMON_TRIGGERS = ['Stress', 'Boredom', 'Social Pressure', 'Emotional Pain', 'Celebration', 'Habit/Routine', 'Loneliness', 'Anxiety'];
+const COMMON_EMOTIONS = ['Anxious', 'Stressed', 'Sad', 'Angry', 'Bored', 'Lonely', 'Overwhelmed', 'Hopeful'];
 
 interface UrgeLogFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (log?: UrgeLog) => void;
+  defaultDuration?: number;
 }
 
-export default function UrgeLogForm({ onSuccess }: UrgeLogFormProps) {
+export const UrgeLogForm: React.FC<UrgeLogFormProps> = ({ onSuccess, defaultDuration = 5 }) => {
   const [intensity, setIntensity] = useState(5);
-  const [selectedTriggers, setSelectedTriggers] = useState<string[]>([]);
-  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
-  const [duration, setDuration] = useState('');
+  const [triggers, setTriggers] = useState<string[]>([]);
+  const [emotions, setEmotions] = useState<string[]>([]);
   const [copingStrategy, setCopingStrategy] = useState('');
+  const [duration, setDuration] = useState(defaultDuration);
   const [notes, setNotes] = useState('');
-  const [resisted, setResisted] = useState<boolean | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resisted, setResisted] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const toggleSelection = (item: string, list: string[], setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+  const toggleItem = (list: string[], setList: React.Dispatch<React.SetStateAction<string[]>>, item: string) => {
     if (list.includes(item)) {
-      setter(list.filter(i => i !== item));
+      setList(list.filter(i => i !== item));
     } else {
-      setter([...list, item]);
+      setList([...list, item]);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (resisted === null) {
-      toast.error('Please indicate if you resisted the urge');
-      return;
-    }
-
-    setIsSubmitting(true);
+    setLoading(true);
     try {
-      await api.urges.logUrge({
+      const res = await api.urges.logUrge({
         intensity,
-        triggers: selectedTriggers,
-        emotions: selectedEmotions,
-        duration_minutes: parseInt(duration) || 0,
-        coping_strategy_used: copingStrategy,
+        triggers,
+        emotions,
+        copingStrategyUsed: copingStrategy,
+        durationMinutes: duration,
         notes,
-        resisted
+        resisted,
+        timestamp: new Date().toISOString()
       });
       toast.success('Urge logged successfully');
-      
-      // Reset form
-      setIntensity(5);
-      setSelectedTriggers([]);
-      setSelectedEmotions([]);
-      setDuration('');
-      setCopingStrategy('');
-      setNotes('');
-      setResisted(null);
-      
-      if (onSuccess) onSuccess();
-    } catch (error) {
+      if (onSuccess) onSuccess(res);
+    } catch (err) {
       toast.error('Failed to log urge');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
-  };
-
-  // Color gradient for intensity slider
-  const getSliderColor = (val: number) => {
-    if (val <= 3) return 'accent-green-500';
-    if (val <= 7) return 'accent-yellow-500';
-    return 'accent-red-500';
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto shadow-sm">
-      <CardHeader>
-        <CardTitle>Log an Urge</CardTitle>
-        <CardDescription>Tracking your urges helps identify patterns and triggers.</CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-8">
-          
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <label className="text-sm font-medium">Intensity (1-10)</label>
-              <span className="text-2xl font-bold">{intensity}</span>
-            </div>
-            <input 
-              type="range"
-              min="1" max="10"
-              value={intensity}
-              onChange={(e) => setIntensity(Number(e.target.value))}
-              className={cn("w-full h-2 rounded-lg appearance-none cursor-pointer bg-muted", getSliderColor(intensity))}
-            />
-          </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-3">
+        <label className="text-sm font-medium">Intensity ({intensity}/10)</label>
+        <input
+          type="range"
+          min="1"
+          max="10"
+          value={intensity}
+          onChange={(e) => setIntensity(Number(e.target.value))}
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, #22c55e, #eab308, #ef4444)`
+          }}
+        />
+      </div>
 
-          <div className="space-y-3">
-            <label className="text-sm font-medium">What triggered this urge?</label>
-            <div className="flex flex-wrap gap-2">
-              {TRIGGERS.map(t => (
-                <Badge
-                  key={t}
-                  variant={selectedTriggers.includes(t) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary/80 transition-colors"
-                  onClick={() => toggleSelection(t, selectedTriggers, setSelectedTriggers)}
-                >
-                  {t}
-                </Badge>
-              ))}
-            </div>
-          </div>
+      <div className="space-y-3">
+        <label className="text-sm font-medium">Triggers</label>
+        <div className="flex flex-wrap gap-2">
+          {COMMON_TRIGGERS.map(t => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => toggleItem(triggers, setTriggers, t)}
+              className={`px-3 py-1 text-xs rounded-full border transition-colors ${triggers.includes(t) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
 
-          <div className="space-y-3">
-            <label className="text-sm font-medium">What emotions are you feeling?</label>
-            <div className="flex flex-wrap gap-2">
-              {EMOTIONS.map(e => (
-                <Badge
-                  key={e}
-                  variant={selectedEmotions.includes(e) ? "secondary" : "outline"}
-                  className="cursor-pointer transition-colors"
-                  onClick={() => toggleSelection(e, selectedEmotions, setSelectedEmotions)}
-                >
-                  {e}
-                </Badge>
-              ))}
-            </div>
-          </div>
+      <div className="space-y-3">
+        <label className="text-sm font-medium">Emotions</label>
+        <div className="flex flex-wrap gap-2">
+          {COMMON_EMOTIONS.map(e => (
+            <button
+              key={e}
+              type="button"
+              onClick={() => toggleItem(emotions, setEmotions, e)}
+              className={`px-3 py-1 text-xs rounded-full border transition-colors ${emotions.includes(e) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
+            >
+              {e}
+            </button>
+          ))}
+        </div>
+      </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Duration (minutes)</label>
-              <Input 
-                type="number" 
-                placeholder="e.g., 15" 
-                value={duration} 
-                onChange={(e) => setDuration(e.target.value)} 
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Coping Strategy Used</label>
-              <Input 
-                type="text" 
-                placeholder="e.g., Deep breathing" 
-                value={copingStrategy} 
-                onChange={(e) => setCopingStrategy(e.target.value)} 
-              />
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Duration (mins)</label>
+          <Input type="number" min="1" value={duration} onChange={(e) => setDuration(Number(e.target.value))} />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Strategy Used</label>
+          <Input placeholder="e.g. Deep breathing" value={copingStrategy} onChange={(e) => setCopingStrategy(e.target.value)} />
+        </div>
+      </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Notes (optional)</label>
-            <textarea 
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Any other thoughts..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Notes (optional)</label>
+        <textarea
+          className="w-full flex min-h-[80px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder="What was happening right before the urge?"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+        />
+      </div>
 
-          <div className="pt-4 border-t space-y-4">
-            <label className="text-base font-semibold text-center block">Did you resist the urge?</label>
-            <div className="grid grid-cols-2 gap-4">
-              <Button 
-                type="button"
-                variant={resisted === true ? "default" : "outline"}
-                className={cn("h-16 text-lg", resisted === true && "bg-green-600 hover:bg-green-700")}
-                onClick={() => setResisted(true)}
-              >
-                <Check className="w-5 h-5 mr-2" /> Yes, I resisted
-              </Button>
-              <Button 
-                type="button"
-                variant={resisted === false ? "destructive" : "outline"}
-                className={cn("h-16 text-lg", resisted === false && "bg-red-600 hover:bg-red-700")}
-                onClick={() => setResisted(false)}
-              >
-                <X className="w-5 h-5 mr-2" /> No, I gave in
-              </Button>
-            </div>
-          </div>
+      <div className="p-4 bg-muted/30 rounded-xl border flex items-center justify-between">
+        <div>
+          <h4 className="font-semibold text-lg">Did you resist the urge?</h4>
+          <p className="text-sm text-muted-foreground">Be honest, this is for your own tracking.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setResisted(!resisted)}
+          className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${resisted ? 'bg-green-500' : 'bg-red-500'}`}
+        >
+          <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${resisted ? 'translate-x-7' : 'translate-x-1'}`} />
+        </button>
+      </div>
 
-        </CardContent>
-        <CardFooter className="bg-muted/30 pt-6">
-          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Log Entry'}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+      <Button type="submit" className="w-full py-6 text-lg" disabled={loading}>
+        {loading ? 'Saving...' : 'Save Log'}
+      </Button>
+    </form>
   );
-}
+};

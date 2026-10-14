@@ -1,72 +1,102 @@
 # Refrain — Adaptive Addiction Recovery & Habit Transformation Platform
 
-Refrain is a production-grade, full-stack application designed to aid in addiction recovery and habit transformation. It utilizes behavioral assessments, progress tracking, and a supportive community feature to help users build healthier habits.
+Refrain is a production-grade, full-stack application designed to aid in addiction recovery and habit transformation. It utilizes behavioral assessments, progress tracking, and a supportive real-time community to help users build healthier habits and sustain lasting freedom.
 
-## Features
-- **Dynamic Behavioral Assessment Engine:** Multi-step onboarding quiz measuring addiction triggers, emotional states, and relapse risk. Generates personalized daily insights based on a Behavioral Signal Vector.
-- **Real-Time Peer Support System:** Live, encrypted chat rooms with WebSockets. Features an emergency "Urge Surfing" tool with live community check-ins.
-- **Analytics & Progress Tracker:** Relapse prevention dashboard featuring streak tracking, milestone badges, trigger heatmaps, and craving intensity logs.
-- **Beautiful & Intuitive UI:** Built with React, Tailwind CSS, Shadcn UI, and Framer Motion, offering smooth transitions, micro-interactions, and a serene dark/light mode toggle.
+---
 
-## Tech Stack
+## 🌟 Key Features
+
+- **Supabase PostgreSQL Database & Auth:**
+  - Production schema in `supabase/schema.sql` with Row Level Security (RLS) guaranteeing user privacy.
+  - Automatic profile initialization upon signup with streak and milestone tracking.
+  - Real-time peer messaging powered by Supabase Realtime Channels.
+  - Zero-config Local Fallback Mode & 1-Click Demo Account for instant evaluation.
+
+- **Dynamic Behavioral Assessment Engine:**
+  - Multi-step onboarding and check-in quiz measuring triggers, severity, and emotional regulation.
+  - Behavioral Signal Vector radar chart (Dopamine Sensitivity, Stress Rating, Trigger Frequency, Relapse Risk).
+  - Generates personalized daily insights and actionable recovery recommendations.
+
+- **Urge Surfing Station (Emergency SOS):**
+  - Clinically grounded 4-7-8 breathing pacer with expanding/contracting visual rings.
+  - Mindful recovery mantras to ride out peak cravings without giving in.
+  - "I Surfed the Urge!" celebration with confetti and instant craving logger.
+
+- **Daily Recovery & Mood Check-In:**
+  - Daily mood, craving spike, and vitality tracking with intuitive emoji-graded sliders.
+  - Tags for emotions (Grateful, Calm, Hopeful, Anxious, Restless, Overwhelmed).
+  - Feeds into interactive Recharts area graphs and trigger heatmaps.
+
+- **Real-Time Peer Support System:**
+  - 4 specialized rooms: *General Recovery*, *Urge Surfing Station*, *Mindfulness & Meditation*, and *Celebrations & Milestones*.
+  - Real-time message streaming with quick encouragement chips (💪, ❤️, 🌱, 🌊, 🙏).
+  - Fully responsive with mobile room switching tabs.
+
+- **Milestones & Streak Tracker:**
+  - 9 unlockable recovery badges: *First Step* (1d), *Getting Started* (3d), *One Week Strong* (7d), *Two Weeks Clear* (14d), *Monthly Warrior* (30d), *Momentum Master* (60d), *Quarter Champion* (90d), *Half Year Hero* (180d), *One Year Legend* (365d).
+  - Clean days ring counter with next milestone progress tracking.
+
+- **Data Privacy & Portability:**
+  - 1-click full JSON export of all personal urge logs, mood histories, and behavioral assessments.
+  - Compassionate clean streak reset with relapse re-framing support.
+
+---
+
+## 🛠️ Tech Stack
+
 ### Frontend
-- React 18+ (Vite)
-- TypeScript
-- Tailwind CSS
-- Shadcn UI (Custom configured)
-- Framer Motion
-- Recharts
+- **React 18+** with TypeScript & Vite
+- **Supabase Client (`@supabase/supabase-js`)** for Auth, PostgreSQL CRUD, and Realtime
+- **Tailwind CSS & Shadcn UI** for modern styling
+- **Framer Motion** for smooth transitions and breathing animations
+- **Recharts** for trend graphs and radar vectors
+- **Canvas Confetti & React Hot Toast** for micro-interactions and celebration
 
-### Backend
-- Python 3.11+
-- FastAPI (Async)
-- Pydantic v2
-- MongoDB (Motor async driver)
-- WebSockets
+### Backend & Cloud
+- **Supabase** (PostgreSQL, Row Level Security, Auth, Realtime)
+- **FastAPI / Python 3.11+** (Async REST API with aligned endpoints)
+- **Cloudflare Pages / Workers** ready (`frontend/functions`)
 
-### Infrastructure
-- Docker & Docker Compose
+---
 
-## Getting Started
+## 🚀 Getting Started
 
-### Prerequisites
-- Node.js (v18+)
-- Python (3.11+)
-- Docker & Docker Compose
+### 1. Connect Supabase (Recommended)
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Open the **SQL Editor** in your Supabase dashboard.
+3. Paste the contents of `supabase/schema.sql` and click **Run**.
+4. In `frontend/.env`, set:
+   ```env
+   VITE_SUPABASE_URL=https://your-project-id.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+   ```
+5. Run the frontend:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+> **Note:** If you haven't created a Supabase project yet, Refrain automatically boots in **Local Mode** with a 1-Click Demo Account so you can test all features immediately!
 
-### Running with Docker Compose
-The easiest way to start the entire stack is with Docker Compose.
+### 2. Running Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
+### 3. Running with Docker Compose
 ```bash
 docker-compose up --build
 ```
-This will start MongoDB, the FastAPI backend (available at `http://localhost:8000`), and the React frontend (available at `http://localhost`).
 
-### Manual Setup
-#### Backend Setup
-1. Navigate to the backend directory: `cd backend`
-2. Create a virtual environment: `python -m venv venv`
-3. Activate the virtual environment:
-   - macOS/Linux: `source venv/bin/activate`
-   - Windows: `venv\Scripts\activate`
-4. Install dependencies: `pip install -r requirements.txt`
-5. Copy `.env.example` to `.env` and adjust the variables. Ensure you have a running MongoDB instance.
-6. Start the FastAPI server: `uvicorn app.main:app --reload`
+---
 
-#### Frontend Setup
-1. Navigate to the frontend directory: `cd frontend`
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
+## 🔒 Security & Privacy
+- **Row Level Security (RLS):** Every user's medical and habit logs are strictly sandboxed; only the owner can read or write their logs.
+- **Client Encryption:** Safe authentication tokens stored in encrypted browser storage with automatic session renewal.
+- **Data Export:** Complete user data ownership with 1-click JSON download in Profile.
 
-## Project Structure
-The repository is split into two main directories:
-- `backend/`: FastAPI application containing core configurations, models, schemas, routers, services, and repositories following a clean architecture pattern.
-- `frontend/`: React Vite application featuring custom Shadcn UI components, specialized hooks, Framer Motion animations, and routing logic.
-
-## Security
-- Authentication is handled via JWT tokens (Access and Refresh tokens).
-- Passwords are encrypted using bcrypt.
-- Rate limiting is configured using slowapi.
-- CORS middleware is enabled to restrict unauthorized origins.
-
-## License
+## 📄 License
 MIT License

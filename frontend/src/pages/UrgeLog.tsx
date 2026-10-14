@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { UrgeLogForm } from '@/components/urge/UrgeLogForm';
 import { UrgeTimeline } from '@/components/urge/UrgeTimeline';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 import {
@@ -55,8 +54,10 @@ export default function UrgeLogPage() {
     }
   };
 
-  const handleUrgeLogged = (newLog: UrgeLog) => {
-    setLogs((prev) => [newLog, ...prev]);
+  const handleUrgeLogged = (newLog?: UrgeLog) => {
+    if (newLog) {
+      setLogs((prev) => [newLog, ...prev]);
+    }
     loadTrends();
   };
 

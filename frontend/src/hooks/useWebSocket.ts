@@ -18,7 +18,8 @@ export function useWebSocket(roomId: string, onMessage: (msg: ChatMessage) => vo
 
     const token = localStorage.getItem('access_token')
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const url = `${protocol}//${window.location.host}/ws/chat/${roomId}?token=${token}`
+    const wsBase = import.meta.env.VITE_WS_URL || `${protocol}//${window.location.host}`
+    const url = `${wsBase.replace(/\/+$/, '')}/ws/chat/${roomId}?token=${token}`
 
     ws.current = new WebSocket(url)
 

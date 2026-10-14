@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
-import { MoodTrend } from '@/types';
+import { MoodTrendDataPoint } from '@/types';
 import { formatDate } from '@/lib/utils';
 
 export const MoodChart: React.FC = () => {
   const [period, setPeriod] = useState<'7' | '30' | '90'>('30');
-  const [data, setData] = useState<MoodTrend[]>([]);
+  const [data, setData] = useState<MoodTrendDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export const MoodChart: React.FC = () => {
       setLoading(true);
       try {
         const res = await api.analytics.getMoodTrends(parseInt(period));
-        setData(res);
+        setData(res.data_points || []);
       } catch (err) {
         console.error('Failed to load mood trends');
       } finally {

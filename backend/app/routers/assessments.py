@@ -10,6 +10,7 @@ router = APIRouter(prefix='/api/v1/assessments', tags=['Assessments'])
 async def get_questions():
     return await assessment_service.get_questions()
 
+@router.post('', response_model=AssessmentResponse)
 @router.post('/', response_model=AssessmentResponse)
 async def submit_assessment(request: AssessmentSubmitRequest, current_user: dict = Depends(get_current_user)):
     return await assessment_service.submit_assessment(current_user['id'], request)

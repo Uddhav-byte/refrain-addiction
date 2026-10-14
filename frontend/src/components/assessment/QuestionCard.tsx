@@ -1,7 +1,6 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { AssessmentQuestion } from '@/types';
 
 interface QuestionCardProps {
@@ -30,7 +29,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, value, onC
           </Badge>
         </div>
         <CardTitle className="text-2xl md:text-3xl font-semibold leading-tight">
-          {question.text}
+          {question.question_text || (question as any).text}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-8 pb-12">

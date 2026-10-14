@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/card';
 import { MilestoneBadge } from '@/types';
 import { Trophy, Lock } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
@@ -17,10 +16,13 @@ export const MilestonesBadges: React.FC<MilestonesBadgesProps> = ({ badges }) =>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {badges.map((badge, index) => {
           const isEarned = badge.earned;
+          const badgeId = badge.id || badge.badge_id || badge.name;
+          const earnedDate = badge.earnedDate || badge.earned_at;
+          const daysLeft = badge.daysRemaining ?? badge.days_required;
           
           return (
             <motion.div
-              key={badge.id}
+              key={badgeId}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
@@ -49,11 +51,11 @@ export const MilestonesBadges: React.FC<MilestonesBadgesProps> = ({ badges }) =>
                   <div className="text-[10px] uppercase font-bold tracking-wider mt-2">
                     {isEarned ? (
                       <span className="text-green-600 dark:text-green-400">
-                        Earned {formatDate(badge.earnedDate!, 'MMM d, yyyy')}
+                        {earnedDate ? `Earned ${formatDate(earnedDate)}` : 'Earned'}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">
-                        {badge.daysRemaining} Days Left
+                        {daysLeft ? `${daysLeft} Days Left` : 'Locked'}
                       </span>
                     )}
                   </div>
