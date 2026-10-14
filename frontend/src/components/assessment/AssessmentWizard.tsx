@@ -26,7 +26,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
         const data = await api.assessments.getQuestions();
         setQuestions(data);
         const initialAnswers: Record<string, number> = {};
-        data.forEach(q => {
+        data.forEach((q: any) => {
           const qId = q.id || q.question_id || '';
           if (qId) initialAnswers[qId] = 5;
         });
