@@ -27,13 +27,6 @@ jobs:
       - name: Build frontend
         run: npm --prefix frontend run build
 
-      - name: Deploy Cloudflare Worker API
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --config worker/wrangler.toml
-
       - name: Deploy Cloudflare Pages (Frontend & Functions)
         uses: cloudflare/wrangler-action@v3
         with:
@@ -41,3 +34,11 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: 'frontend'
           command: pages deploy dist --project-name=refrain-app --branch=main
+
+      - name: Deploy Cloudflare Worker API
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config worker/wrangler.toml
